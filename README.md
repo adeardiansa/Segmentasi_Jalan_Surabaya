@@ -1,397 +1,416 @@
-## HRDA: Context-Aware High-Resolution Domain-Adaptive Semantic Segmentation
+# 🛣️ Segmentasi Semantik Infrastruktur Jalan Surabaya
+## Berbasis Domain Adaptation dengan HRDA (High-Resolution Domain Adaptation)
 
-**by [Lukas Hoyer](https://lhoyer.github.io/), [Dengxin Dai](https://vas.mpi-inf.mpg.de/dengxin/), and [Luc Van Gool](https://scholar.google.de/citations?user=TwMib_QAAAAJ&hl=en)**
+<div align="center">
 
-**[[ECCV22 Paper]](https://arxiv.org/pdf/2204.13132)**
-**[[Extension Paper]](https://arxiv.org/pdf/2304.13615.pdf)**
+![Python](https://img.shields.io/badge/Python-3.8+-blue?logo=python&logoColor=white)
+![PyTorch](https://img.shields.io/badge/PyTorch-1.7.1-EE4C2C?logo=pytorch&logoColor=white)
+![CUDA](https://img.shields.io/badge/CUDA-11.0-76B900?logo=nvidia&logoColor=white)
+![License](https://img.shields.io/badge/License-Apache%202.0-green)
+![Skripsi](https://img.shields.io/badge/Skripsi-S1-orange)
 
-:bell: **News:**
+**Segmentasi semantik pada citra jalan kota Surabaya menggunakan pendekatan Unsupervised Domain Adaptation (UDA) — memanfaatkan data sintetis GTA5 untuk melatih model yang mampu memahami kondisi jalan nyata di Indonesia.**
 
-* [2024-07-03] We are happy to announce that our work [SemiVL](https://github.com/google-research/semivl) on semi-supervised semantic segmentation with vision-language guidance was accepted at **ECCV24**.
-* [2024-07-03] We are happy to announce that our follow-up work [DGInStyle](https://dginstyle.github.io/) on image diffusion for domain-generalizable semantic segmentation was accepted at **ECCV24**.
-* [2023-09-26] We are happy to announce that our [Extension Paper](https://arxiv.org/pdf/2304.13615.pdf) on domain generalization and clear-to-adverse-weather UDA was accapted at **PAMI**. 
-* [2023-08-25] We are happy to announce that our follow-up work [EDAPS](https://github.com/susaha/edaps) on panoptic segmentation UDA was accepted at **ICCV23**.
-* [2023-04-27] We further extend HRDA to domain generalization and clear-to-adverse-weather UDA in the [Extension Paper](https://arxiv.org/pdf/2304.13615.pdf).
-* [2023-02-28] We are happy to announce that our follow-up work [MIC](https://github.com/lhoyer/MIC) on context-enhanced UDA was accepted at **CVPR23**.
-* [2022-07-05] We are happy to announce that HRDA was accepted at **ECCV22**.
+</div>
 
-## Overview
+---
 
-**Unsupervised domain adaptation (UDA)** aims to adapt a model trained on
-synthetic data to real-world data without requiring expensive annotations of
-real-world images. As UDA methods for semantic segmentation are usually GPU
-memory intensive, most **previous methods operate only on downscaled images**.
-We question this design as low-resolution predictions often fail to preserve
-fine details. The alternative of training with random crops of high-resolution
-images alleviates this problem but falls short in capturing long-range,
-domain-robust context information.
+## 📌 Deskripsi Proyek
 
-Therefore, we propose **HRDA**, a multi-resolution training approach for UDA,
-that combines the strengths of small high-resolution crops to **preserve fine
-segmentation details** and large low-resolution crops to **capture long-range
-context dependencies** with a learned scale attention, while maintaining a
-**manageable GPU memory** footprint.
+Proyek ini merupakan penelitian skripsi yang berfokus pada **segmentasi semantik infrastruktur jalan di Kota Surabaya** menggunakan pendekatan **Domain Adaptation**. Tantangan utama dalam segmentasi semantik di konteks Indonesia adalah keterbatasan data berlabel (*annotated data*) pada kondisi jalan lokal yang memiliki karakteristik berbeda dengan dataset benchmark internasional (seperti Cityscapes yang berbasis kota-kota Eropa).
 
-![HRDA Overview](resources/hrda_overview.png)
+### Apa itu Domain Adaptation?
 
-HRDA enables adapting small objects and preserving fine segmentation details.
-It significantly improves the state-of-the-art performance **by 5.5 mIoU for
-GTA→Cityscapes** and **by 4.9 mIoU for Synthia→Cityscapes**, resulting in an
-unprecedented performance of 73.8 and 65.8 mIoU, respectively.
-
-![UDA over time](resources/uda_over_time_hrda.png)
-
-The more detailed domain-adaptive semantic segmentation of HRDA, compared to
-the previous state-of-the-art UDA method DAFormer, can also be observed in
-example predictions from the Cityscapes validation set.
-
-![Demo](resources/demo.gif)
-
-https://user-images.githubusercontent.com/1277888/181128057-27b8039f-a4c9-4f6d-9aa8-9b7f364d8921.mp4
-
-![Color Palette](resources/color_palette.png)
-
-HRDA can be further **extended to domain generalization** lifting the requirement
-of access to target images. Also in domain generalization,
-HRDA significantly improves the state-of-the-art performance by **+4.2 mIoU**.
-
-For more information on HRDA, please check our
-[[ECCV Paper]](https://arxiv.org/pdf/2204.13132) and the [[Extension Paper]](https://arxiv.org/pdf/2304.13615.pdf).
-
-If you find HRDA useful in your research, please consider citing:
+Domain Adaptation adalah teknik *transfer learning* yang memungkinkan model yang dilatih pada **domain sumber** (misalnya, data sintetis dari game GTA5) untuk bekerja dengan baik pada **domain target** (citra jalan nyata di Surabaya), meskipun terdapat perbedaan distribusi data yang signifikan (*domain gap*).
 
 ```
-@InProceedings{hoyer2022hrda,
-  title={{HRDA}: Context-Aware High-Resolution Domain-Adaptive Semantic Segmentation},
-  author={Hoyer, Lukas and Dai, Dengxin and Van Gool, Luc},
-  booktitle={Proceedings of the European Conference on Computer Vision (ECCV)},
-  pages={372--391},
-  year={2022}
-}
-
-@Article{hoyer2024domain,
-  title={Domain Adaptive and Generalizable Network Architectures and Training Strategies for Semantic Image Segmentation},
-  author={Hoyer, Lukas and Dai, Dengxin and Van Gool, Luc},
-  journal={IEEE Transactions on Pattern Analysis and Machine Intelligence (PAMI)}, 
-  year={2024},
-  volume={46},
-  number={1},
-  pages={220-235},
-  doi={10.1109/TPAMI.2023.3320613}
-}
+Domain Sumber (Source)          Domain Target
+┌─────────────────────┐         ┌─────────────────────────┐
+│  GTA5 (Sintetis)    │──HRDA──▶│  Jalan Surabaya (Nyata) │
+│  + Cityscapes       │         │  (Indonesian Cityscapes) │
+│  (dengan label)     │         │  (tanpa/sedikit label)   │
+└─────────────────────┘         └─────────────────────────┘
 ```
 
-## Comparison with SOTA UDA
+### Kenapa HRDA?
 
-HRDA significantly outperforms previous works on several UDA benchmarks.
-This includes synthetic-to-real adaptation on GTA→Cityscapes and
-Synthia→Cityscapes as well as clear-to-adverse-weather adaptation on
-Cityscapes→ACDC and Cityscapes→DarkZurich.
+**HRDA (High-Resolution Domain Adaptation)** adalah metode state-of-the-art yang menggabungkan dua skala resolusi:
+- **Context crop (resolusi rendah)**: Menangkap informasi konteks gambar secara keseluruhan
+- **Detail crop (resolusi tinggi)**: Mempertahankan detail halus seperti marka jalan, tepi trotoar, dan rambu
 
-|                     | GTA→CS(val)    | Synthia→CS(val)    | CS→ACDC(test) | CS→DarkZurich(test) |
-|---------------------|----------------|--------------------|---------------|---------------------|
-| ADVENT [1]          | 45.5           | 41.2               | 32.7          | 29.7                |
-| BDL [2]             | 48.5           | --                 | 37.7          | 30.8                |
-| FDA [3]             | 50.5           | --                 | 45.7          | --                  |
-| DACS [4]            | 52.1           | 48.3               | --            | --                  |
-| ProDA [5]           | 57.5           | 55.5               | --            | --                  |
-| MGCDA [6]           | --             | --                 | 48.7          | 42.5                |
-| DANNet [7]          | --             | --                 | 50.0          | 45.2                |
-| DAFormer (Ours) [8] | 68.3           | 60.9               | 55.4&ast;     | 53.8&ast;           |
-| HRDA (Ours)         | **73.8**       | **65.8**           | **68.0***     | **55.9***           |
+Pendekatan dua-skala ini secara signifikan meningkatkan akurasi segmentasi dibanding metode resolusi tunggal, terutama pada objek kecil yang sering ditemui di jalan kota.
 
-&ast; New results of our [extension paper](https://arxiv.org/pdf/2304.13615.pdf)
+---
 
-References:
+## 🏗️ Arsitektur Model
 
-1. Vu et al. "Advent: Adversarial entropy minimization for domain adaptation in semantic segmentation" in CVPR 2019.
-2. Li et al. "Bidirectional learning for domain adaptation of semantic segmentation" in CVPR 2019.
-3. Yang et al. "Fda: Fourier domain adaptation for semantic segmentation" in CVPR 2020.
-4. Tranheden et al. "Dacs: Domain adaptation via crossdomain mixed sampling" in WACV 2021.
-5. Zhang et al. "Prototypical pseudo label denoising and target structure learning for domain adaptive semantic segmentation" in CVPR 2021.
-6. Sakaridis et al. "Map-guided curriculum domain adaptation and uncertaintyaware evaluation for semantic nighttime image segmentation" in TPAMI, 2020.
-7. Wu et al. "DANNet: A one-stage domain adaptation network for unsupervised nighttime semantic segmentation" in CVPR, 2021.
-8. Hoyer et al. "DAFormer: Improving Network Architectures and Training Strategies for Domain-Adaptive Semantic Segmentation" in CVPR, 2022.
-
-## Comparison with SOTA Domain Generalization (DG)
-
-HRDA and DAFormer significantly outperform previous works on domain generalization from GTA to real street scenes.
-
-| DG Method           | Cityscapes     | BDD100K        | Mapillary        | Avg.           |
-|---------------------|----------------|----------------|------------------|----------------|
-| IBN-Net [1,5]       | 37.37          | 34.21          | 36.81            | 36.13          |
-| DRPC [2]            | 42.53          | 38.72          | 38.05            | 39.77          |
-| ISW [3,5]           | 37.20          | 33.36          | 35.57            | 35.38          |
-| SAN-SAW [4]         | 45.33          | 41.18          | 40.77            | 42.43          |
-| SHADE [5]           | 46.66          | 43.66          | 45.50            | 45.27          |
-| DAFormer (Ours) [6] | 52.65&ast;     | 47.89&ast;     | 54.66&ast;       | 51.73&ast;     |
-| HRDA (Ours)         | **57.41&ast;** | **49.11&ast;** | **61.16&ast;**   | **55.90&ast;** |
-
-&ast; New results of our [extension paper](https://arxiv.org/pdf/2304.13615.pdf)
-
-References:
-
-1. Pan et al. "Two at once: Enhancing learning and generalization capacities via IBN-Net" in ECCV, 2018.
-2. Yue et al. "Domain randomization and pyramid consistency: Simulation-to-real generalization without accessing target domain data" ICCV, 2019.
-3. Choi et al. "RobustNet: Improving Domain Generalization in Urban-Scene Segmentation via Instance Selective Whitening" in CVPR, 2021.
-4. Peng et al. "Semantic-aware domain generalized segmentation" in CVPR, 2022.
-5. Zhao et al. "Style-Hallucinated Dual Consistency Learning for Domain Generalized Semantic Segmentation" in ECCV, 2022.
-6. Hoyer et al. "DAFormer: Improving Network Architectures and Training Strategies for Domain-Adaptive Semantic Segmentation" in CVPR, 2022.
-
-## Setup Environment
-
-For this project, we used python 3.8.5. We recommend setting up a new virtual
-environment:
-
-```shell
-python -m venv ~/venv/hrda
-source ~/venv/hrda/bin/activate
+```
+Input Citra (1024×1024)
+         │
+    ┌────┴────┐
+    │  HRDA   │  ← HRDAEncoderDecoder
+    └────┬────┘
+         │
+  ┌──────┴──────┐
+  │             │
+  ▼             ▼
+Context      Detail
+Crop (0.5x)  Crop (512×512)
+  │             │
+  ▼             ▼
+MiT-B5       MiT-B5        ← Mix Transformer Backbone (SegFormer)
+Encoder      Encoder
+  │             │
+  ▼             ▼
+DAFormer     DAFormer       ← Decoder dengan Separable ASPP
+Head         Head
+  │             │
+  └──────┬──────┘
+         │ Scale Attention (class-wise)
+         ▼
+   Segmentation Map
 ```
 
-In that environment, the requirements can be installed with:
+### Komponen Utama
 
-```shell
-pip install -r requirements.txt -f https://download.pytorch.org/whl/torch_stable.html
-pip install mmcv-full==1.3.7  # requires the other packages to be installed first
+| Komponen | Detail |
+|---|---|
+| **Backbone** | Mix Transformer B5 (MiT-B5) — pre-trained ImageNet |
+| **Decoder** | DAFormer dengan Separable ASPP |
+| **UDA Method** | DACS (Domain Adaptation via Cross-domain mixed Sampling) |
+| **Resolusi Training** | 1024×1024 (High-Resolution) |
+| **Detail Crop** | 512×512 |
+| **Context Scale** | 0.5× (512×512) |
+
+---
+
+## 📂 Struktur Proyek
+
+```
+HRDA1 train yes/
+├── configs/                    # Konfigurasi model dan training
+│   ├── _base_/
+│   │   ├── datasets/           # Konfigurasi dataset
+│   │   ├── models/             # Arsitektur model
+│   │   ├── schedules/          # Optimizer & learning rate
+│   │   └── uda/                # Pengaturan UDA (DACS, dll.)
+│   ├── hrda/
+│   │   └── gtaHR2csHR_hrda.py  # Konfigurasi utama HRDA
+│   └── cityscapes_indo_segformer.py  # Konfigurasi SegFormer untuk dataset Indo
+│
+├── mmseg/                      # Inti framework segmentasi (MMSegmentation)
+├── mmsegmentation/             # Library MMSegmentation
+├── tools/                      # Script training & evaluasi
+│   ├── train.py                # Script utama training
+│   ├── test.py                 # Script evaluasi/inference
+│   └── dist_train.sh           # Training multi-GPU
+│
+├── data/                       # Dataset (tidak disertakan di repo)
+│   └── cityscapes_indo/        # Dataset jalan Surabaya (Indonesian Cityscapes)
+│       ├── leftImg8bit/        # Gambar asli
+│       ├── gtFine/             # Anotasi ground truth
+│       └── category_mapping.json
+│
+├── pretrained/                 # Model pre-trained (MiT-B5)
+├── work_dirs/                  # Output training (checkpoint, log)
+├── resources/                  # Gambar, demo, overview arsitektur
+│
+├── convert_annotations.py      # Konversi anotasi polygon → labelTrainIds
+├── experiments.py              # Generator konfigurasi eksperimen
+├── run_experiments.py          # Runner eksperimen otomatis
+├── test_dataset.py             # Validasi dataset
+├── validate_config.py          # Validasi konfigurasi
+├── requirements.txt            # Dependensi Python
+└── TRAINING_CITYSCAPES_INDO.md # Panduan training dataset Indo
 ```
 
-Please, download the MiT-B5 ImageNet weights provided by [SegFormer](https://github.com/NVlabs/SegFormer?tab=readme-ov-file#training)
-from their [OneDrive](https://connecthkuhk-my.sharepoint.com/:f:/g/personal/xieenze_connect_hku_hk/EvOn3l1WyM5JpnMQFSEO5b8B7vrHw9kDaJGII-3N9KNhrg?e=cpydzZ) and put them in the folder `pretrained/`.
-Further, download the checkpoint of [HRDA on GTA→Cityscapes](https://drive.google.com/file/d/1O6n1HearrXHZTHxNRWp8HCMyqbulKcSW/view?usp=sharing) and extract it to the folder `work_dirs/`.
+---
 
-## Setup Datasets
+## ⚙️ Instalasi & Persiapan
 
-**Cityscapes:** Please, download leftImg8bit_trainvaltest.zip and
-gt_trainvaltest.zip from [here](https://www.cityscapes-dataset.com/downloads/)
-and extract them to `data/cityscapes`.
+### 1. Prasyarat
 
-**GTA:** Please, download all image and label packages from
-[here](https://download.visinf.tu-darmstadt.de/data/from_games/) and extract
-them to `data/gta`.
+- Python 3.8+
+- CUDA 11.0
+- GPU dengan minimal 16GB VRAM (direkomendasikan: NVIDIA RTX 3090 / TITAN RTX)
 
-**Synthia (Optional):** Please, download SYNTHIA-RAND-CITYSCAPES from
-[here](http://synthia-dataset.net/downloads/) and extract it to `data/synthia`.
+### 2. Clone Repository
 
-**ACDC (Optional):** Please, download rgb_anon_trainvaltest.zip and
-gt_trainval.zip from [here](https://acdc.vision.ee.ethz.ch/download) and
-extract them to `data/acdc`. Further, please restructure the folders from
-`condition/split/sequence/` to `split/` using the following commands:
-
-```shell
-rsync -a data/acdc/rgb_anon/*/train/*/* data/acdc/rgb_anon/train/
-rsync -a data/acdc/rgb_anon/*/val/*/* data/acdc/rgb_anon/val/
-rsync -a data/acdc/gt/*/train/*/*_labelTrainIds.png data/acdc/gt/train/
-rsync -a data/acdc/gt/*/val/*/*_labelTrainIds.png data/acdc/gt/val/
+```bash
+git clone https://github.com/adeardiansa/Segmentasi_Jalan_Surabaya.git
+cd Segmentasi_Jalan_Surabaya
 ```
 
-**Dark Zurich (Optional):** Please, download the Dark_Zurich_train_anon.zip
-and Dark_Zurich_val_anon.zip from
-[here](https://www.trace.ethz.ch/publications/2019/GCMA_UIoU/) and extract it
-to `data/dark_zurich`.
+### 3. Buat Environment Virtual
 
-**BDD100K (Optional):** Please, download the `10K Images` and `Segmentation` from
-[here](https://bdd-data.berkeley.edu/portal.html#download) and extract it
-to `data/bdd100k`.
-
-**Mapillary (Optional):** Please, download the mapillary-vistas-dataset_public_v1.2.zip
-from [here](https://www.mapillary.com/dataset/vistas) and extract it
-to `data/mapillary`.
-
-The final folder structure should look like this:
-
-```none
-HRDA
-├── ...
-├── data
-│   ├── acdc (optional)
-│   │   ├── gt
-│   │   │   ├── train
-│   │   │   ├── val
-│   │   ├── rgb_anon
-│   │   │   ├── train
-│   │   │   ├── val
-│   ├── bdd100k (optional)
-│   │   ├── images/10k/val
-│   │   ├── labels/sem_seg/masks/val
-│   ├── cityscapes
-│   │   ├── leftImg8bit
-│   │   │   ├── train
-│   │   │   ├── val
-│   │   ├── gtFine
-│   │   │   ├── train
-│   │   │   ├── val
-│   ├── dark_zurich (optional)
-│   │   ├── gt
-│   │   │   ├── val
-│   │   ├── rgb_anon
-│   │   │   ├── train
-│   │   │   ├── val
-│   ├── gta
-│   │   ├── images
-│   │   ├── labels
-│   ├── mapillary (optional)
-│   │   ├── validation/images
-│   │   ├── validation/labels
-│   ├── synthia (optional)
-│   │   ├── RGB
-│   │   ├── GT
-│   │   │   ├── LABELS
-├── ...
+```bash
+conda create -n hrda python=3.8
+conda activate hrda
 ```
 
-**Data Preprocessing:** Finally, please run the following scripts to convert the label IDs to the
-train IDs and to generate the class index for RCS:
+### 4. Install Dependensi
 
-```shell
-python tools/convert_datasets/gta.py data/gta --nproc 8
-python tools/convert_datasets/cityscapes.py data/cityscapes --nproc 8
-python tools/convert_datasets/synthia.py data/synthia/ --nproc 8
-python tools/convert_datasets/mapillary.py data/mapillary/ --nproc 8
+```bash
+pip install torch==1.7.1+cu110 torchvision==0.8.2+cu110 -f https://download.pytorch.org/whl/torch_stable.html
+pip install -r requirements.txt
+
+# Install MMSegmentation
+cd mmsegmentation
+pip install -e .
+cd ..
 ```
 
-## Testing & Predictions
+### 5. Download Pre-trained Backbone
 
-The provided HRDA checkpoint trained on GTA→Cityscapes can be tested on the
-Cityscapes validation set using:
-
-```shell
-sh test.sh work_dirs/gtaHR2csHR_hrda_246ef
+```bash
+# Download MiT-B5 pre-trained weights
+mkdir -p pretrained
+# Letakkan mit_b5.pth di folder pretrained/
 ```
 
-The predictions are saved for inspection to
-`work_dirs/gtaHR2csHR_hrda_246ef/preds`
-and the mIoU of the model is printed to the console. The provided checkpoint
-should achieve 73.79 mIoU. Refer to the end of
-`work_dirs/gtaHR2csHR_hrda_246ef/20220215_002056.log` for
-more information such as the class-wise IoU.
+---
 
-If you want to visualize the LR predictions, HR predictions, or scale
-attentions of HRDA on the validation set, please refer to [test.sh](test.sh) for
-further instructions.
+## 📊 Dataset
 
-## Training
+### Indonesian Cityscapes (Jalan Surabaya)
 
-For convenience, we provide an [annotated config file](configs/hrda/gtaHR2csHR_hrda.py)
-of the final HRDA. A training job can be launched using:
+Dataset target dikumpulkan dari citra jalan Kota Surabaya dengan format serupa Cityscapes:
 
-```shell
-python run_experiments.py --config configs/hrda/gtaHR2csHR_hrda.py
+```
+data/cityscapes_indo/
+├── leftImg8bit/
+│   ├── train/     # Gambar training
+│   ├── val/       # Gambar validasi
+│   └── test/      # Gambar test
+├── gtFine/
+│   ├── train/     # Anotasi training
+│   ├── val/       # Anotasi validasi
+│   └── test/      # Anotasi test
+├── train.txt      # Daftar file training
+├── val.txt        # Daftar file validasi
+├── test.txt       # Daftar file test
+└── category_mapping.json  # Pemetaan kategori ke trainId
 ```
 
-The logs and checkpoints are stored in `work_dirs/`.
+### Konversi Anotasi
 
-For the other experiments in our paper, we use a script to automatically
-generate and train the configs:
+Jika anotasi masih dalam format polygon JSON, jalankan konversi terlebih dahulu:
 
-```shell
-python run_experiments.py --exp <ID>
+```bash
+python convert_annotations.py
 ```
 
-More information about the available experiments and their assigned IDs, can be
-found in [experiments.py](experiments.py). The generated configs will be stored
-in `configs/generated/`.
+### Dataset Sumber (Source Domain)
 
-When evaluating a model trained on Synthia→Cityscapes, please note that the
-evaluation script calculates the mIoU for all 19 Cityscapes classes. However,
-Synthia contains only labels for 16 of these classes. Therefore, it is a common
-practice in UDA to report the mIoU for Synthia→Cityscapes only on these 16
-classes. As the Iou for the 3 missing classes is 0, you can do the conversion
-`mIoU16 = mIoU19 * 19 / 16`.
+| Dataset | Jenis | Jumlah Gambar | Keterangan |
+|---|---|---|---|
+| **GTA5** | Sintetis (Game) | ~24,000 | Grand Theft Auto V renderings |
+| **Cityscapes** | Nyata (Eropa) | ~3,000 | Kota-kota Eropa (Düsseldorf, dll.) |
+| **Indonesian Cityscapes** | Nyata (Indonesia) | Variabel | **Jalan Kota Surabaya** |
 
-The results for Cityscapes→ACDC and Cityscapes→DarkZurich are reported on
-the test split of the target dataset. To generate the predictions for the test
-set, please run:
+---
 
-```shell
-python -m tools.test path/to/config_file path/to/checkpoint_file --test-set --format-only --eval-option imgfile_prefix=labelTrainIds to_label_id=False
+## 🚀 Training
+
+### Opsi 1: HRDA Training (Rekomendasi)
+
+Training utama dengan metode HRDA — GTA5 → Indonesian Cityscapes:
+
+```bash
+python tools/train.py configs/hrda/gtaHR2csHR_hrda.py \
+    --work-dir work_dirs/hrda_surabaya
 ```
 
-The predictions can be submitted to the public evaluation server of the
-respective dataset to obtain the test score.
+### Opsi 2: SegFormer Baseline
 
-## Domain Generalization
+Training SegFormer standar sebagai baseline:
 
-HRDA/DAFormer for domain generalization (DG) is located on the DG branch, which can
-be checked out with:
-
-```shell
-git checkout dg
+```bash
+python tools/train.py configs/cityscapes_indo_segformer.py \
+    --work-dir work_dirs/segformer_baseline
 ```
 
-They can be trained for DG using:
+### Opsi 3: Multi-GPU Training
 
-```shell
-python run_experiments.py --exp 50
+```bash
+./tools/dist_train.sh configs/hrda/gtaHR2csHR_hrda.py <JUMLAH_GPU> \
+    --work-dir work_dirs/hrda_surabaya_multigpu
+
+# Contoh dengan 2 GPU:
+./tools/dist_train.sh configs/hrda/gtaHR2csHR_hrda.py 2 \
+    --work-dir work_dirs/hrda_surabaya
 ```
 
-For further details, please refer to [experiment.py](experiments.py). The model is
-directly evaluated on Cityscapes during training with GTA data only. It can be additionally
-evaluated on BDD100K and Mapillary with [tools/test.py](tools/test.py):
+### Hyperparameter Utama
 
-```shell
-python -m tools.test path/to/config_file path/to/checkpoint_file --eval mIoU --dataset BDD100K
-python -m tools.test path/to/config_file path/to/checkpoint_file --eval mIoU --dataset Mapillary --eval-option efficient_test=True
+| Parameter | Nilai |
+|---|---|
+| **Optimizer** | AdamW |
+| **Learning Rate** | 6e-5 |
+| **Scheduler** | Polynomial + Warmup (10%) |
+| **Max Iterations** | 40,000 |
+| **Batch Size** | 2 per GPU |
+| **Input Resolution** | 1024×1024 |
+| **Detail Crop Size** | 512×512 |
+| **Context Scale** | 0.5× |
+| **HR Loss Weight (λd)** | 0.1 |
+
+### Monitor Training
+
+```bash
+tensorboard --logdir work_dirs/hrda_surabaya
 ```
 
-## Checkpoints
+---
 
-Below, we provide checkpoints of HRDA for different benchmarks.
-They come together with the log files of their training.
-As the results in the paper are provided as the mean over three random
-seeds, we provide the checkpoint with the median validation performance here.
+## 🧪 Evaluasi
 
-* [HRDA for GTA→Cityscapes](https://drive.google.com/file/d/1O6n1HearrXHZTHxNRWp8HCMyqbulKcSW/view?usp=sharing)
-* [HRDA for Synthia→Cityscapes](https://drive.google.com/file/d/1V6kSLq3FH8o-FJf-syiiQx6E74ML9Huw/view?usp=sharing)
-* [HRDA for Cityscapes→ACDC](https://drive.google.com/file/d/1Pwb1NAKx-WeVdhKEfafn29_JP4iEyKQM/view?usp=sharing)
-* [HRDA for Cityscapes→DarkZurich](https://drive.google.com/file/d/1QEfolITfZWA_gvtTtVgv8oa-exP9PEo0/view?usp=sharing)
-* [HRDA for GTA Domain Generalization](https://drive.google.com/file/d/19MA5NJTFJrbwAdgYeqjfSaPCx9Fnmm4M/view?usp=sharing)
-* [DAFormer for GTA Domain Generalization](https://drive.google.com/file/d/1up9x3R3HtU_MjM6F89xNIHzPbIqBSacx/view?usp=sharing)
+### Evaluasi pada Validation Set
 
-The checkpoints come with the training logs. Please note that:
+```bash
+python tools/test.py configs/hrda/gtaHR2csHR_hrda.py \
+    work_dirs/hrda_surabaya/latest.pth \
+    --eval mIoU
+```
 
-* The logs provide the mIoU for 19 classes. For Synthia→Cityscapes, it is
-  necessary to convert the mIoU to the 16 valid classes. Please, read the
-  section above for converting the mIoU.
-* The logs provide the mIoU on the validation set. For Cityscapes→ACDC and
-  Cityscapes→DarkZurich the results reported in the paper are calculated on the
-  test split. For DarkZurich, the performance significantly differs between
-  validation and test split. Please, read the section above on how to obtain
-  the test mIoU.
-* The logs for domain generalization (DG) provide the validation performance on Cityscapes.
-  Please, refer to the section above to evaluate the checkpoint on BDD100K and Mapillary.
+### Inference pada Gambar Baru
 
-## Framework Structure
+```python
+from mmseg.apis import inference_segmentor, init_segmentor
+import cv2
 
-This project is based on [mmsegmentation version 0.16.0](https://github.com/open-mmlab/mmsegmentation/tree/v0.16.0).
-For more information about the framework structure and the config system,
-please refer to the [mmsegmentation documentation](https://mmsegmentation.readthedocs.io/en/latest/index.html)
-and the [mmcv documentation](https://mmcv.readthedocs.ihttps://arxiv.org/abs/2007.08702o/en/v1.3.7/index.html).
+# Inisialisasi model
+config_file = 'configs/hrda/gtaHR2csHR_hrda.py'
+checkpoint_file = 'work_dirs/hrda_surabaya/latest.pth'
+model = init_segmentor(config_file, checkpoint_file, device='cuda:0')
 
-The most relevant files for HRDA are:
+# Jalankan segmentasi
+img = 'path/to/gambar_jalan_surabaya.jpg'
+result = inference_segmentor(model, img)
 
-* [configs/hrda/gtaHR2csHR_hrda.py](configs/hrda/gtaHR2csHR_hrda.py):
-  Annotated config file for the final HRDA.
-* [mmseg/models/segmentors/hrda_encoder_decoder.py](mmseg/models/segmentors/hrda_encoder_decoder.py):
-  Implementation of the HRDA multi-resolution encoding with context and detail crop.
-* [mmseg/models/decode_heads/hrda_head.py](mmseg/models/decode_heads/hrda_head.py):
-  Implementation of the HRDA decoding with multi-resolution fusion and scale attention.
-* [mmseg/models/uda/dacs.py](mmseg/models/uda/dacs.py):
-  Implementation of the DAFormer self-training.
+# Simpan hasil visualisasi
+model.show_result(img, result, out_file='hasil_segmentasi.png', opacity=0.5)
+```
 
-## Acknowledgements
+### Metrik Evaluasi
 
-HRDA is based on the following open-source projects. We thank their
-authors for making the source code publicly available.
+| Metrik | Keterangan |
+|---|---|
+| **mIoU** | Mean Intersection over Union (metrik utama) |
+| **mAcc** | Mean Accuracy per kelas |
+| **aAcc** | Overall pixel accuracy |
 
-* [DAFormer](https://github.com/lhoyer/DAFormer)
-* [MMSegmentation](https://github.com/open-mmlab/mmsegmentation)
-* [SegFormer](https://github.com/NVlabs/SegFormer)
-* [DACS](https://github.com/vikolss/DACS)
-* [SHADE](https://github.com/HeliosZhao/SHADE)
+---
 
-## License
+## 🗂️ Kelas Segmentasi
 
-This project is released under the [Apache License 2.0](LICENSE), while some
-specific features in this repository are with other licenses. Please refer to
-[LICENSES.md](LICENSES.md) for the careful check, if you are using our code for
-commercial matters.
+Model ini melakukan segmentasi terhadap elemen infrastruktur jalan, mengikuti format label Cityscapes yang telah disesuaikan dengan kondisi jalan Surabaya:
+
+| ID | Kelas | Keterangan |
+|---|---|---|
+| 0 | road | Permukaan jalan aspal |
+| 1 | sidewalk | Trotoar/kaki lima |
+| 2 | building | Bangunan di sekitar jalan |
+| 3 | wall | Tembok/dinding |
+| 4 | fence | Pagar |
+| 5 | pole | Tiang (lampu, rambu) |
+| 6 | traffic light | Lampu lalu lintas |
+| 7 | traffic sign | Rambu lalu lintas |
+| 8 | vegetation | Pepohonan/tanaman |
+| 9 | terrain | Medan/tanah |
+| 10 | sky | Langit |
+| 11 | person | Pejalan kaki |
+| 12 | rider | Pengendara sepeda/motor |
+| 13 | car | Mobil |
+| 14 | truck | Truk |
+| 15 | bus | Bus |
+| 16 | train | Kereta |
+| 17 | motorcycle | Sepeda motor |
+| 18 | bicycle | Sepeda |
+
+---
+
+## 🔧 Konfigurasi & Eksperimen
+
+### Generate Konfigurasi Eksperimen
+
+```bash
+# Generate konfigurasi untuk eksperimen tertentu (misal, exp ID 40 = Final HRDA)
+python run_experiments.py --exp 40
+```
+
+### Validasi Dataset
+
+```bash
+python test_dataset.py
+```
+
+### Validasi Konfigurasi
+
+```bash
+python validate_config.py
+```
+
+---
+
+## 🛠️ Troubleshooting
+
+| Masalah | Solusi |
+|---|---|
+| `No such file or directory: data/cityscapes_indo` | Pastikan dataset sudah ditempatkan dengan struktur yang benar |
+| Error saat load annotation | Jalankan `convert_annotations.py` untuk konversi format label |
+| CUDA Out of Memory | Kurangi `batch_size` ke 1, atau `crop_size` ke 512×512 |
+| Hasil segmentasi buruk | Cek kualitas anotasi dataset target, tambah iterasi training |
+
+### Konfigurasi untuk GPU Terbatas
+
+Edit file konfigurasi dan sesuaikan:
+
+```python
+data = dict(
+    samples_per_gpu=1,    # Kurangi batch size
+    workers_per_gpu=2,
+)
+# Di konfigurasi model:
+hr_crop_size = [256, 256]  # Kurangi ukuran detail crop
+```
+
+---
+
+## 🧠 Metode Utama
+
+### HRDA (High-Resolution Domain Adaptation)
+
+HRDA menggabungkan prediksi dari dua skala untuk mengatasi trade-off antara resolusi tinggi dan konteks global:
+
+1. **Multi-Scale Processing**: Gambar diproses dalam dua skala — full resolution (detail) dan downsampled 0.5× (context)
+2. **Scale Attention**: Model belajar bobot attention untuk setiap kelas secara terpisah (*class-wise attention*)
+3. **Detail Loss (λd=0.1)**: Supervisi tambahan pada prediction skala tinggi untuk mempertajam detail
+
+### DACS (Domain Adaptation via Cross-domain mixed Sampling)
+
+Metode UDA yang digunakan untuk *self-training* dengan pseudo-label:
+- Menghasilkan pseudo-label pada domain target menggunakan model yang sedang dilatih
+- Menggabungkan patch gambar sumber dan target (*copy-paste mixing*)
+- Menerapkan Rare Class Sampling (RCS) untuk mengatasi class imbalance
+
+### DAFormer Decoder
+
+Decoder berbasis transformer dengan Separable ASPP yang efisien secara komputasi, dioptimalkan untuk UDA tasks.
+
+---
+
+## 📚 Referensi
+
+- **HRDA** — Hoyer, L., Dai, D., & Van Gool, L. (2022). *HRDA: Context-Aware High-Resolution Domain-Adaptive Semantic Segmentation*. ECCV 2022. [[Paper]](https://arxiv.org/abs/2204.13132) [[Code]](https://github.com/lhoyer/HRDA)
+- **DAFormer** — Hoyer, L., Dai, D., & Van Gool, L. (2022). *DAFormer: Improving Network Architectures and Training Strategies for Domain-Adaptive Semantic Segmentation*. CVPR 2022.
+- **DACS** — Tranheden, W., et al. (2021). *DACS: Domain Adaptation via Cross-domain Mixed Sampling*. WACV 2021.
+- **SegFormer** — Xie, E., et al. (2021). *SegFormer: Simple and Efficient Design for Semantic Segmentation with Transformers*. NeurIPS 2021.
+
+---
+
+## 📄 Lisensi
+
+Kode ini dikembangkan di atas [HRDA](https://github.com/lhoyer/HRDA) dan [MMSegmentation](https://github.com/open-mmlab/mmsegmentation) yang berlisensi **Apache License 2.0**. Silakan lihat file `LICENSE` dan folder `resources/license_*` untuk detail setiap komponen.
+
+</div>
