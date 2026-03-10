@@ -7,7 +7,6 @@
 ![PyTorch](https://img.shields.io/badge/PyTorch-1.7.1-EE4C2C?logo=pytorch&logoColor=white)
 ![CUDA](https://img.shields.io/badge/CUDA-11.0-76B900?logo=nvidia&logoColor=white)
 ![License](https://img.shields.io/badge/License-Apache%202.0-green)
-![Skripsi](https://img.shields.io/badge/Skripsi-S1-orange)
 
 **Segmentasi semantik pada citra jalan kota Surabaya menggunakan pendekatan Unsupervised Domain Adaptation (UDA) — memanfaatkan data sintetis GTA5 untuk melatih model yang mampu memahami kondisi jalan nyata di Indonesia.**
 
